@@ -1,8 +1,6 @@
-﻿//
-// Created by Lars on 30-5-2026.
-//
-
-#include "Lexer.h"
+﻿#include "Lexer.h"
+#include <iostream>
+#include <cctype>
 
 std::vector<Token> Lexer::Tokenize() {
 
@@ -11,66 +9,88 @@ std::vector<Token> Lexer::Tokenize() {
     while (pos < src.size()) {
 
         char c = src[pos];
-        if (isspace(c)) {
+
+
+        if (std::isspace(static_cast<unsigned char>(c))) {
             pos++;
+            continue;
         }
-        else if (isdigit(c)) {
-            tokens.push_back(HandleNumber());
+
+        if (std::isdigit(static_cast<unsigned char>(c))) {
+            tokens.push_back(HandleValue());
+            continue;
         }
-        else if (isalpha(c)) {
+
+
+        if (std::isalpha(static_cast<unsigned char>(c))) {
             tokens.push_back(HandleIdentifier());
+            continue;
         }
-        else
-            {
-            switch (c)
-            {
-                case '+':
-                    tokens.push_back({TokenType::PLUS, "+"});
-                    break;
 
-                case '-':
-                    tokens.push_back({TokenType::MINUS, "-"});
-                    break;
 
-                case '*':
-                    tokens.push_back({TokenType::STAR, "*"});
-                    break;
+        switch (c) {
 
-                case '/':
-                    tokens.push_back({TokenType::SLASH, "/"});
-                    break;
+            case '+':
+                tokens.push_back({TokenType::PLUS, "+"});
+                pos++;
+                break;
 
-                case '=':
-                    tokens.push_back({TokenType::EQUAL, "="});
-                    break;
-            }
-            pos++;
+            case '-':
+                tokens.push_back({TokenType::MINUS, "-"});
+                pos++;
+                break;
+
+            case '*':
+                tokens.push_back({TokenType::STAR, "*"});
+                pos++;
+                break;
+
+            case '/':
+                tokens.push_back({TokenType::SLASH, "/"});
+                pos++;
+                break;
+
+            case '=':
+                tokens.push_back({TokenType::EQUAL, "="});
+                pos++;
+                break;
+
+            default:
+                std::cerr << "Unknown character: " << c << std::endl;
+                pos++;
+                break;
         }
     }
+
     tokens.push_back({TokenType::END, ""});
     return tokens;
 }
 
 Token Lexer::HandleValue() {
+
     std::string value;
-    while (pos < src.size() && isdigit(src[pos])) {
-        val += src[pos++];
-    }
-    return {TokenType::NUMBER, val};
+
+    while (pos < src.size() &&
+           std::isdigit(static_cast<unsigned char>(src[pos]))) {
+
+        value += src[pos++];
+           }
+
+    return {TokenType::NUMBER, value};
 }
 
 Token Lexer::HandleIdentifier() {
+
     std::string value;
-    while (pos < src.size() && isalnum(src[pos])) {
-        val += src[pos++];
-    }
 
-    if (val == "print")
-        return {TokenType::PRINT, val};
+    while (pos < src.size() &&
+           std::isalnum(static_cast<unsigned char>(src[pos]))) {
+
+        value += src[pos++];
+           }
+
+    if (value == "print")
+        return {TokenType::PRINT, value};
+
+    return {TokenType::IDENT, value};
 }
-
-
-}
-
-
-

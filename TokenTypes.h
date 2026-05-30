@@ -1,23 +1,16 @@
-﻿//
-// Created by Lars on 30-5-2026.
-//
-
-#ifndef L___TOKENS_H
-#define L___TOKENS_H
-
-
+﻿#pragma once
+#include <string>
 
 enum class TokenType {
     NUMBER,
     IDENT,
-    PLUS, MINUS, STAR, SLASH,
-    EQUAL,
     PRINT,
+
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+    EQUAL,
+
     END
 };
-
-
-
-
-
-#endif //L___TOKENS_H

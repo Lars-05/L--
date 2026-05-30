@@ -3,8 +3,10 @@ project(L__)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(L__ main.cpp
-        TokenTypes.cpp
-        TokenTypes.h
+add_executable(L__
+        main.cpp
+        Lexer.cpp
+        Parser.cpp
         Token.cpp
-        Token.h)
+        TokenTypes.cpp
+)
