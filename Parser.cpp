@@ -8,23 +8,25 @@ void Parser::Run() {
 }
 
 void Parser::Statement() {
+
     if (Peek().type == TokenType::PRINT) {
-        Advance();
-        std::string name = Advance().value;
-        std::cout << vars[name] << std::endl;
+        Advance();              // print
+        Advance();              // (
+
+        int value = Expression();
+
+        Advance();              // )
+        std::cout << value << std::endl;
         return;
     }
 
     if (Peek().type == TokenType::IDENT) {
         std::string name = Advance().value;
-        Advance(); // '='
+        Advance(); // =
         int value = Expression();
         vars[name] = value;
         return;
     }
-
-    std::cerr << "Unknown token: " << Peek().value << std::endl;
-    Advance();
 }
 
 int Parser::Expression() {

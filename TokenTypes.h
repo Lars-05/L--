@@ -12,5 +12,10 @@ enum class TokenType {
     SLASH,
     EQUAL,
 
+    IF,
+
+    LPAREN,
+    RPAREN,
+
     END
 };

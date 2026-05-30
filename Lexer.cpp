@@ -55,6 +55,17 @@ std::vector<Token> Lexer::Tokenize() {
                 pos++;
                 break;
 
+
+            case '(':
+                tokens.push_back({TokenType::LPAREN, "("});
+                pos++;
+                break;
+
+            case ')': tokens.push_back({TokenType::RPAREN, ")"});
+                pos++;
+                break;
+
+
             default:
                 std::cerr << "Unknown character: " << c << std::endl;
                 pos++;
