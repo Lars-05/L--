@@ -1,4 +1,7 @@
 x = 10 + 5
-y = x * 2
-wawa = x * 5
-print(
+
+
+if(x == 15)
+{
+    print(x)
+}

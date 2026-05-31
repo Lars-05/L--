@@ -116,6 +116,8 @@ std::vector<Token> Lexer::Tokenize() {
             break;
 
 
+
+
             default:
                 std::cerr << "Unknown character: " << c << std::endl;
                 pos++;
@@ -149,6 +151,11 @@ Token Lexer::HandleIdentifier() {
 
         value += src[pos++];
            }
+
+    if (value == "if")
+        return {TokenType::IF, value};
+
+
 
     if (value == "print")
         return {TokenType::PRINT, value};
