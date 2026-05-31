@@ -11,4 +11,6 @@ add_executable(L__
         TokenTypes.cpp
         TokenTools.cpp
         TokenTools.h
+        Operators.cpp
+        Operators.h
 )

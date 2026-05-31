@@ -39,6 +39,31 @@ void Parser::Statement() {
         return;
     }
 
+    if (Peek().type == TokenType::IF) {
+
+        Advance(); // IF
+
+        if (Peek().type != TokenType::LPAREN) {
+            std::cout << "Error: if statement is missing '('" << std::endl;
+            return;
+        }
+        Advance(); // (
+
+        int value = Expression();
+
+        if (Peek().type != TokenType::RPAREN) {
+            std::cout << "Error: if statement is missing ')'" << std::endl;
+            return;
+        }
+        Advance(); // )
+
+        std::cout << value << std::endl;
+        return;
+    }
+
+
+
+
     if (Peek().type == TokenType::IDENT) {
         std::string name = Advance().value;
         Advance(); // =
