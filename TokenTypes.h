@@ -17,6 +17,10 @@ enum class TokenType {
     LPAREN,
     RPAREN,
 
+    LBRACE,
+    RBRACE,
+
+
     END,
 
     // Operators

@@ -72,6 +72,16 @@ std::vector<Token> Lexer::Tokenize() {
                 pos++;
                 break;
 
+            case '{':
+                tokens.push_back({TokenType::LBRACE, "{"});
+                pos++;
+                break;
+
+            case '}':
+                tokens.push_back({TokenType::RBRACE, "}"});
+                pos++;
+                break;
+
 
             case '>':
                 if (src[pos++] == '=')

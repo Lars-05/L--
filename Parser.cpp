@@ -15,16 +15,6 @@ void Parser::Run() {
     }
 }
 
-bool Parser::Equality(int a, int b)
-{
- 
-}
-
-int Parser::Comparison(int a, int b)
-{
-
-
-}
 
 
 
@@ -54,28 +44,63 @@ void Parser::Statement() {
 
     if (Peek().type == TokenType::IF) {
 
-        Advance(); // IF
+        // IF ( NUMBER OPERATOR NUMBER)
+        Advance(); // (
 
         if (Peek().type != TokenType::LPAREN) {
             std::cout << "Error: if statement is missing '('" << std::endl;
             return;
         }
-        Advance(); // (
+        Advance(); // a
 
-        int value = Expression();
+        int a = Expression();
+
+        Advance(); // operator
+
+
+        TokenType operatorType = Peek().type;
+        bool foundMatch = false;
+
+        for (int i = 0; i < operators.size(); i++)
+        {
+            if (operatorType == operators[i]) {
+                foundMatch = true;
+                break;
+            }
+        }
+
+        if (!foundMatch) {
+            std::cout << "Error: if statement is missing (valid?) operator" << std::endl;
+            return;
+        }
+
+        Advance(); // b
+
+        int b = Expression();
+
+        Advance(); // )
 
         if (Peek().type != TokenType::RPAREN) {
             std::cout << "Error: if statement is missing ')'" << std::endl;
             return;
         }
-        Advance(); // )
 
-        std::cout << value << std::endl;
+
+        if (Equality(a,b, operatorType)) {
+            Advance(); // {
+
+            if (Peek().type != TokenType::LBRACE)
+            {
+                std::cout << "Error: if statement is missing '{'" << std::endl;
+                return;
+            }
+
+            while (Peek().type != TokenType::LBRACE || Peek().type != TokenType::END) {
+                Statement();
+            }
+        }
         return;
     }
-
-
-
 
     if (Peek().type == TokenType::IDENT) {
         std::string name = Advance().value;
@@ -85,6 +110,51 @@ void Parser::Statement() {
         return;
     }
 }
+
+
+
+
+
+bool Parser::Equality(int a, int b, TokenType type)
+{
+
+    switch (type) {
+        case TokenType::EQEQUAL:
+            return a == b;
+        break;
+
+        case TokenType::NOT_EQUAL:
+            return a != b;
+        break;
+
+        default:
+            Comparison(a,b, type);
+    }
+}
+
+int Parser::Comparison(int a, int b, TokenType type)
+{
+    switch (type) {
+        case TokenType::LESSER:
+            return a < b;
+        break;
+
+        case TokenType::GREATER:
+            return a > b;
+        break;
+
+        case TokenType::GREATER_EQUAL:
+            return a >= b;
+        break;
+
+        case TokenType::LESSER_EQUAL:
+            return a <= b;
+        break;
+    }
+
+
+}
+
 
 int Parser::Expression() {
     int left = Term();
@@ -138,6 +208,10 @@ Token Parser::Peek() {
     return tokens[pos];
 }
 
+
+
+
+
 Token Parser::Advance() {
     if (pos < tokens.size())
         return tokens[pos++];
@@ -145,7 +219,7 @@ Token Parser::Advance() {
     return {TokenType::END, ""};
 }
 
-Token Parser::PeekForward(int steps) {
+Token Parser::PeekAhead(int steps) {
     size_t index = pos + steps;
 
     if (index < tokens.size())

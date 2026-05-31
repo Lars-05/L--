@@ -21,23 +21,18 @@ public:
 
     void Run();
 
-    std::array<TokenType, 3> printFormat = {
-        TokenType::LPAREN,
-        TokenType::NUMBER,
-        TokenType::RPAREN
-    };
-
-    std::array<TokenType, 8> operators = {
-
+    std::array<TokenType, 6> operators{{
         TokenType::EQEQUAL,
-        TokenType::NOT_EQUAL,
+        TokenType::EQUAL,
 
         TokenType::GREATER,
         TokenType::GREATER_EQUAL,
 
         TokenType::LESSER,
         TokenType::LESSER_EQUAL
-    };
+    }};
+
+
 
     TokenTools tools;
 private:
@@ -53,13 +48,13 @@ private:
     void Statement();
 
 
-    bool Equality(int,int);
-    int Comparison(int,int);
+    bool Equality(int,int, TokenType);
+    int Comparison(int,int, TokenType);
     int Expression();
     int Term();
     int Primary();
 
-    Token PeekForward(int);
+    Token PeekAhead(int);
     Token Peek();
     Token Advance();
 };
