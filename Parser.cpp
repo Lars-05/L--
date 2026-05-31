@@ -1,6 +1,14 @@
 ﻿#include "Parser.h"
 #include <iostream>
 
+#include "TokenTools.h"
+
+
+Parser::Parser(const std::vector<Token> &tokens) : tokens(tokens), pos(0) {
+
+}
+
+
 void Parser::Run() {
     while (Peek().type != TokenType::END) {
         Statement();
@@ -10,12 +18,23 @@ void Parser::Run() {
 void Parser::Statement() {
 
     if (Peek().type == TokenType::PRINT) {
-        Advance();              // print
-        Advance();              // (
+
+        Advance(); // PRINT
+
+        if (Peek().type != TokenType::LPAREN) {
+            std::cout << "Error: print statement is missing '('" << std::endl;
+            return;
+        }
+        Advance(); // (
 
         int value = Expression();
 
-        Advance();              // )
+        if (Peek().type != TokenType::RPAREN) {
+            std::cout << "Error: print statement is missing ')'" << std::endl;
+            return;
+        }
+        Advance(); // )
+
         std::cout << value << std::endl;
         return;
     }
@@ -84,6 +103,15 @@ Token Parser::Peek() {
 Token Parser::Advance() {
     if (pos < tokens.size())
         return tokens[pos++];
+
+    return {TokenType::END, ""};
+}
+
+Token Parser::PeekForward(int steps) {
+    size_t index = pos + steps;
+
+    if (index < tokens.size())
+        return tokens[index];
 
     return {TokenType::END, ""};
 }

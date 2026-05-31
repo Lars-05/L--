@@ -9,4 +9,6 @@ add_executable(L__
         Parser.cpp
         Token.cpp
         TokenTypes.cpp
+        TokenTools.cpp
+        TokenTools.h
 )

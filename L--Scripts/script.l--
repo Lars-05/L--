@@ -1,4 +1,4 @@
 x = 10 + 5
 y = x * 2
 wawa = x * 5
-print(wawa)
+print(
