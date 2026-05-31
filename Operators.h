@@ -6,16 +6,7 @@
 #define L___OPERATORS_H
 
 
-enum class Operators {
-    AND,
-    OR,
-    EQUAL,
-    LESSER,
-    GREATER,
-    GREATER_EQUAL,
-    LESSER_EQUAL
 
-};
 
 
 #endif //L___OPERATORS_H

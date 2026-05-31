@@ -27,6 +27,18 @@ public:
         TokenType::RPAREN
     };
 
+    std::array<TokenType, 8> operators = {
+
+        TokenType::EQEQUAL,
+        TokenType::NOT_EQUAL,
+
+        TokenType::GREATER,
+        TokenType::GREATER_EQUAL,
+
+        TokenType::LESSER,
+        TokenType::LESSER_EQUAL
+    };
+
     TokenTools tools;
 private:
 
@@ -40,6 +52,9 @@ private:
 
     void Statement();
 
+
+    bool Equality(int,int);
+    int Comparison(int,int);
     int Expression();
     int Term();
     int Primary();

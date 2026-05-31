@@ -17,5 +17,15 @@ enum class TokenType {
     LPAREN,
     RPAREN,
 
-    END
+    END,
+
+    // Operators
+    AND,
+    OR,
+    EQEQUAL,
+    LESSER,
+    GREATER,
+    NOT_EQUAL,
+    GREATER_EQUAL,
+    LESSER_EQUAL
 };

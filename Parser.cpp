@@ -15,6 +15,19 @@ void Parser::Run() {
     }
 }
 
+bool Parser::Equality(int a, int b)
+{
+ 
+}
+
+int Parser::Comparison(int a, int b)
+{
+
+
+}
+
+
+
 void Parser::Statement() {
 
     if (Peek().type == TokenType::PRINT) {

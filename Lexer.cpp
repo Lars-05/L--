@@ -51,10 +51,17 @@ std::vector<Token> Lexer::Tokenize() {
                 break;
 
             case '=':
-                tokens.push_back({TokenType::EQUAL, "="});
+                if (src[pos++] == '=')
+                {
+                    tokens.push_back({TokenType::EQEQUAL, "=="});
+                }
+                else
+                {
+                    tokens.push_back({TokenType::EQUAL, "="});
+                }
+
                 pos++;
                 break;
-
 
             case '(':
                 tokens.push_back({TokenType::LPAREN, "("});
@@ -64,6 +71,39 @@ std::vector<Token> Lexer::Tokenize() {
             case ')': tokens.push_back({TokenType::RPAREN, ")"});
                 pos++;
                 break;
+
+
+            case '>':
+                if (src[pos++] == '=')
+                {
+                    tokens.push_back({TokenType::GREATER_EQUAL, ">="});
+                    break;
+                }
+                tokens.push_back({TokenType::GREATER, ">"});
+                pos++;
+            break;
+
+            case '<':
+                if (src[pos++] == '=')
+                {
+                    tokens.push_back({TokenType::LESSER_EQUAL, "<="});
+                }
+                else
+                {
+                    tokens.push_back({TokenType::LESSER, "<"});
+                }
+                pos++;
+
+            break;
+
+
+            case '!':
+                if (src[pos++] == '=')
+                {
+                    tokens.push_back({TokenType::NOT_EQUAL, "!="});
+                }
+                pos++;
+            break;
 
 
             default:
