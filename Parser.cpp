@@ -42,8 +42,8 @@ void Parser::Statement() {
         return;
     }
 
-    if (Peek().type == TokenType::IF) {
-
+    if (Peek().type == TokenType::IF)
+    {
         // IF ( NUMBER OPERATOR NUMBER)
         Advance(); // (
 
@@ -54,9 +54,6 @@ void Parser::Statement() {
         Advance(); // a
 
         int a = Expression();
-
-        Advance(); // operator
-
 
         TokenType operatorType = Peek().type;
         bool foundMatch = false;
@@ -78,7 +75,6 @@ void Parser::Statement() {
 
         int b = Expression();
 
-        Advance(); // )
 
         if (Peek().type != TokenType::RPAREN) {
             std::cout << "Error: if statement is missing ')'" << std::endl;
@@ -97,6 +93,7 @@ void Parser::Statement() {
 
             while (Peek().type != TokenType::LBRACE || Peek().type != TokenType::END) {
                 Statement();
+                Advance();
             }
         }
         return;
