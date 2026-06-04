@@ -7,10 +7,8 @@ add_executable(L__
         main.cpp
         Lexer.cpp
         Parser.cpp
-        Token.cpp
-        TokenTypes.cpp
-        TokenTools.cpp
-        TokenTools.h
-        Operators.cpp
-        Operators.h
+        AST.cpp
+        AST.h
+        Interpreter.cpp
+        Interpreter.h
 )

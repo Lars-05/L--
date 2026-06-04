@@ -1,226 +1,98 @@
 ﻿#include "Parser.h"
-#include <iostream>
+#include <stdexcept>
 
-#include "TokenTools.h"
-
-
-Parser::Parser(const std::vector<Token> &tokens) : tokens(tokens), pos(0) {
-
-}
-
-
-void Parser::Run() {
-    while (Peek().type != TokenType::END) {
-        Statement();
+Token& Parser::peek() { return tokens[i]; }
+Token& Parser::advance() { return tokens[i++]; }
+void Parser::CheckForSemiColon() {
+    if (peek().type == TokenType::SEMI) {
+        advance();
     }
 }
 
+Parser::Parser(std::vector<Token> t) : tokens(std::move(t)) {}
 
+bool Parser::match(TokenType t) {
 
+    if (peek().type == t) {
+        advance();
+        return true;
+    }
+    return false;
+}
 
-void Parser::Statement() {
+std::unique_ptr<Expr> Parser::parseExpr() {
 
-    if (Peek().type == TokenType::PRINT) {
+    if (peek().type == TokenType::NUMBER) {
 
-        Advance(); // PRINT
-
-        if (Peek().type != TokenType::LPAREN) {
-            std::cout << "Error: print statement is missing '('" << std::endl;
-            return;
-        }
-        Advance(); // (
-
-        int value = Expression();
-
-        if (Peek().type != TokenType::RPAREN) {
-            std::cout << "Error: print statement is missing ')'" << std::endl;
-            return;
-        }
-        Advance(); // )
-
-        std::cout << value << std::endl;
-        return;
+        int value = std::stoi(peek().text);
+        advance();
+        return std::make_unique<IntExpr>(value);
     }
 
-    if (Peek().type == TokenType::IF)
-    {
-        // IF ( NUMBER OPERATOR NUMBER)
-        Advance(); // (
+    if (peek().type == TokenType::IDENT) {
 
-        if (Peek().type != TokenType::LPAREN) {
-            std::cout << "Error: if statement is missing '('" << std::endl;
-            return;
-        }
-        Advance(); // a
+        std::string name = peek().text;
+        advance();
+        return std::make_unique<VarExpr>(name);
+    }
 
-        int a = Expression();
+    throw std::runtime_error("Expected expression");
+}
 
-        TokenType operatorType = Peek().type;
-        bool foundMatch = false;
+std::unique_ptr<Stmt> Parser::parseStmt() {
 
-        for (int i = 0; i < operators.size(); i++)
-        {
-            if (operatorType == operators[i]) {
-                foundMatch = true;
-                break;
-            }
+    if (match(TokenType::INT)) {
+
+        //structure = [INT][IDENT(x)][=][NUMBER(10)][;]
+
+        auto stmt = std::make_unique<VarDecl>();
+
+        if (peek().type != TokenType::IDENT) {
+            throw std::runtime_error("Expected identifier");
         }
 
-        if (!foundMatch) {
-            std::cout << "Error: if statement is missing (valid?) operator" << std::endl;
-            return;
+        stmt->name = advance().text;
+
+        if (peek().type == TokenType::EQUAL) {
+            advance();
+            stmt->value = parseExpr();
         }
 
-        Advance(); // b
+        CheckForSemiColon();
 
-        int b = Expression();
+        return stmt;
+    }
 
+    if (match(TokenType::PRINT)) {
 
-        if (Peek().type != TokenType::RPAREN) {
-            std::cout << "Error: if statement is missing ')'" << std::endl;
-            return;
+        //structure =[PRINT][IDENT(x)][;]
+
+        auto stmt = std::make_unique<PrintStmt>();
+
+        stmt->value = parseExpr();
+
+        CheckForSemiColon();
+
+        return stmt;
+    }
+
+    return nullptr;
+}
+
+std::vector<std::unique_ptr<Stmt>> Parser::parse() {
+
+    std::vector<std::unique_ptr<Stmt>> stmts;
+
+    while (peek().type != TokenType::END) {
+
+        auto stmt = parseStmt();
+
+        if (!stmt) {
+            throw std::runtime_error("Unexpected token: " + peek().text);
         }
 
-
-        if (Equality(a,b, operatorType)) {
-            Advance(); // {
-
-            if (Peek().type != TokenType::LBRACE)
-            {
-                std::cout << "Error: if statement is missing '{'" << std::endl;
-                return;
-            }
-
-            while (Peek().type != TokenType::LBRACE || Peek().type != TokenType::END) {
-                Statement();
-                Advance();
-            }
-        }
-        return;
+        stmts.push_back(std::move(stmt));
     }
 
-    if (Peek().type == TokenType::IDENT) {
-        std::string name = Advance().value;
-        Advance(); // =
-        int value = Expression();
-        vars[name] = value;
-        return;
-    }
-}
-
-
-
-
-
-bool Parser::Equality(int a, int b, TokenType type)
-{
-
-    switch (type) {
-        case TokenType::EQEQUAL:
-            return a == b;
-        break;
-
-        case TokenType::NOT_EQUAL:
-            return a != b;
-        break;
-
-        default:
-            Comparison(a,b, type);
-    }
-}
-
-int Parser::Comparison(int a, int b, TokenType type)
-{
-    switch (type) {
-        case TokenType::LESSER:
-            return a < b;
-        break;
-
-        case TokenType::GREATER:
-            return a > b;
-        break;
-
-        case TokenType::GREATER_EQUAL:
-            return a >= b;
-        break;
-
-        case TokenType::LESSER_EQUAL:
-            return a <= b;
-        break;
-    }
-
-
-}
-
-
-int Parser::Expression() {
-    int left = Term();
-
-    while (Peek().type == TokenType::PLUS ||
-           Peek().type == TokenType::MINUS) {
-
-        Token op = Advance();
-        int right = Term();
-
-        if (op.type == TokenType::PLUS) left += right;
-        else left -= right;
-           }
-
-    return left;
-}
-
-int Parser::Term() {
-    int left = Primary();
-
-    while (Peek().type == TokenType::STAR ||
-           Peek().type == TokenType::SLASH) {
-
-        Token op = Advance();
-        int right = Primary();
-
-        if (op.type == TokenType::STAR) left *= right;
-        else left /= right;
-           }
-
-    return left;
-}
-
-int Parser::Primary() {
-    if (Peek().type == TokenType::NUMBER) {
-        return std::stoi(Advance().value);
-    }
-
-    if (Peek().type == TokenType::IDENT) {
-        std::string name = Advance().value;
-        return vars[name];
-    }
-
-    return 0;
-}
-
-Token Parser::Peek() {
-    if (pos >= tokens.size())
-        return {TokenType::END, ""};
-
-    return tokens[pos];
-}
-
-
-
-
-
-Token Parser::Advance() {
-    if (pos < tokens.size())
-        return tokens[pos++];
-
-    return {TokenType::END, ""};
-}
-
-Token Parser::PeekAhead(int steps) {
-    size_t index = pos + steps;
-
-    if (index < tokens.size())
-        return tokens[index];
-
-    return {TokenType::END, ""};
+    return stmts;
 }

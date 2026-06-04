@@ -1,60 +1,26 @@
-﻿#pragma once
-#include <array>
+﻿
+#pragma once
+#include <memory>
+#include "Lexer.h"
 #include <vector>
-#include <unordered_map>
 
-#include "Token.h"
-#include "TokenTools.h"
-#include "TokenTypes.h"
-
-
-
-
-
+#include "AST.h"
 
 class Parser {
-
-
-
 public:
-    Parser(const std::vector<Token>& tokens);
+    explicit Parser(std::vector<Token> t);
 
-    void Run();
+    std::vector<std::unique_ptr<Stmt>> parse();
 
-    std::array<TokenType, 6> operators{{
-        TokenType::EQEQUAL,
-        TokenType::EQUAL,
-
-        TokenType::GREATER,
-        TokenType::GREATER_EQUAL,
-
-        TokenType::LESSER,
-        TokenType::LESSER_EQUAL
-    }};
-
-
-
-    TokenTools tools;
 private:
-
-
-
-
     std::vector<Token> tokens;
-    size_t pos;
+    size_t i = 0;
 
-    std::unordered_map<std::string, int> vars;
+    Token& peek();
+    Token& advance();
+    bool match(TokenType t);
 
-    void Statement();
-
-
-    bool Equality(int,int, TokenType);
-    int Comparison(int,int, TokenType);
-    int Expression();
-    int Term();
-    int Primary();
-
-    Token PeekAhead(int);
-    Token Peek();
-    Token Advance();
+    std::unique_ptr<Expr> parseExpr();
+    std::unique_ptr<Stmt> parseStmt();
+    void CheckForSemiColon();
 };

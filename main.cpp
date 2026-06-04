@@ -5,33 +5,45 @@
 
 #include "Lexer.h"
 #include "Parser.h"
+#include "Interpreter.h"
 
 int main() {
 
     std::string filePath = "L--Scripts/script.l--";
 
-    std::cout << "Trying to open: " << filePath << std::endl;
-    std::cout << "CWD: " << std::filesystem::current_path() << std::endl;
+    std::cout << "Loading file: " << filePath << "\n";
+    std::cout << "Working dir: " << std::filesystem::current_path() << "\n";
+
 
     std::ifstream file(filePath);
 
     if (!file.is_open()) {
-        std::cerr << "Could not open file: " << filePath << std::endl;
+        std::cerr << "ERROR: Could not open file: " << filePath << "\n";
         return 1;
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
+    std::string source = buffer.str();
 
-    std::string code = buffer.str();
+    std::cout << "File loaded successfully\n";
 
-    Lexer lexer(code);
-    auto tokens = lexer.Tokenize();
 
-    std::cout << "Lexer done" << std::endl;
+    Lexer lexer(source);
+    auto tokens = lexer.tokenize();
+
+    std::cout << "Lexer complete\n";
+
+
     Parser parser(tokens);
-    parser.Run();
-    std::cout << "Parser done" << std::endl;
+    auto ast = parser.parse();
+
+    std::cout << "Parser complete\n";
+
+    Interpreter interp;
+    interp.Run(ast);
+
+    std::cout << "Execution complete\n";
 
     return 0;
 }

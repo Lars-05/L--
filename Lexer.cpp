@@ -1,164 +1,61 @@
-﻿#include "Lexer.h"
-#include <iostream>
+﻿// Lexer.cpp
+#include "Lexer.h"
 #include <cctype>
 
-std::vector<Token> Lexer::Tokenize() {
+Lexer::Lexer(std::string s) : src(std::move(s)) {}
 
-    std::vector<Token> tokens;
+char Lexer::peek() { return i < src.size() ? src[i] : '\0'; }
 
-    while (pos < src.size()) {
+char Lexer::get(){ return src[i++]; }
 
-        char c = src[pos];
+void Lexer::skip() {
+    while (isspace(peek())) get();
+}
 
+std::vector<Token> Lexer::tokenize()
+{
+    std::vector<Token> out;
 
-        if (std::isspace(static_cast<unsigned char>(c))) {
-            pos++;
-            continue;
+    while (i < src.size())
+    {
+        skip();
+        char c = peek();
+
+        if (isalpha(c)) {
+            std::string word;
+
+            while (isalnum(peek())) word += get();
+
+            if (word == "int")
+                out.push_back({TokenType::INT, word});
+            else if (word == "print")
+                out.push_back({TokenType::PRINT, word});
+            else
+                out.push_back({TokenType::IDENT, word});
         }
-
-        if (std::isdigit(static_cast<unsigned char>(c))) {
-            tokens.push_back(HandleValue());
-            continue;
+        else if (isdigit(c))
+        {
+            std::string num;
+            while (isdigit(peek())) num += get();
+            out.push_back({TokenType::NUMBER, num});
         }
-
-
-        if (std::isalpha(static_cast<unsigned char>(c))) {
-            tokens.push_back(HandleIdentifier());
-            continue;
-        }
-
-
-        switch (c) {
-
-            case '+':
-                tokens.push_back({TokenType::PLUS, "+"});
-                pos++;
-                break;
-
-            case '-':
-                tokens.push_back({TokenType::MINUS, "-"});
-                pos++;
-                break;
-
-            case '*':
-                tokens.push_back({TokenType::STAR, "*"});
-                pos++;
-                break;
-
-            case '/':
-                tokens.push_back({TokenType::SLASH, "/"});
-                pos++;
-                break;
-
-            case '=':
-                if (src[pos++] == '=')
-                {
-                    tokens.push_back({TokenType::EQEQUAL, "=="});
-                }
-                else
-                {
-                    tokens.push_back({TokenType::EQUAL, "="});
-                }
-
-                pos++;
-                break;
-
-            case '(':
-                tokens.push_back({TokenType::LPAREN, "("});
-                pos++;
-                break;
-
-            case ')': tokens.push_back({TokenType::RPAREN, ")"});
-                pos++;
-                break;
-
-            case '{':
-                tokens.push_back({TokenType::LBRACE, "{"});
-                pos++;
-                break;
-
-            case '}':
-                tokens.push_back({TokenType::RBRACE, "}"});
-                pos++;
-                break;
-
-
-            case '>':
-                if (src[pos++] == '=')
-                {
-                    tokens.push_back({TokenType::GREATER_EQUAL, ">="});
+        else
+        {
+            switch (c)
+            {
+                case '=':
+                    get(); out.push_back({TokenType::EQUAL, "="});
                     break;
-                }
-                tokens.push_back({TokenType::GREATER, ">"});
-                pos++;
-            break;
-
-            case '<':
-                if (src[pos++] == '=')
-                {
-                    tokens.push_back({TokenType::LESSER_EQUAL, "<="});
-                }
-                else
-                {
-                    tokens.push_back({TokenType::LESSER, "<"});
-                }
-                pos++;
-
-            break;
-
-
-            case '!':
-                if (src[pos++] == '=')
-                {
-                    tokens.push_back({TokenType::NOT_EQUAL, "!="});
-                }
-                pos++;
-            break;
-
-
-
-
-            default:
-                std::cerr << "Unknown character: " << c << std::endl;
-                pos++;
-                break;
+                case ';':
+                    get(); out.push_back({TokenType::SEMI, ";"});
+                    break;
+                default:
+                    get();
+                    break;
+            }
         }
     }
 
-    tokens.push_back({TokenType::END, ""});
-    return tokens;
-}
-
-Token Lexer::HandleValue() {
-
-    std::string value;
-
-    while (pos < src.size() &&
-           std::isdigit(static_cast<unsigned char>(src[pos]))) {
-
-        value += src[pos++];
-           }
-
-    return {TokenType::NUMBER, value};
-}
-
-Token Lexer::HandleIdentifier() {
-
-    std::string value;
-
-    while (pos < src.size() &&
-           std::isalnum(static_cast<unsigned char>(src[pos]))) {
-
-        value += src[pos++];
-           }
-
-    if (value == "if")
-        return {TokenType::IF, value};
-
-
-
-    if (value == "print")
-        return {TokenType::PRINT, value};
-
-    return {TokenType::IDENT, value};
+    out.push_back({TokenType::END, ""});
+    return out;
 }

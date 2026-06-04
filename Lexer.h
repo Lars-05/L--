@@ -1,32 +1,30 @@
-﻿//
-// Created by Lars on 30-5-2026.
-//
-
-#ifndef L_LEXER_H
-#define L_LEXER_H
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
+﻿
+#pragma once
 #include <string>
 #include <vector>
-#include <unordered_map>
-#include <cctype>
 
-#include "Token.h"
+enum class TokenType {
+    INT, PRINT,
+    IDENT, NUMBER,
+    EQUAL, SEMI,
+    END
+};
 
+struct Token {
+    TokenType type;
+    std::string text;
+};
 
 class Lexer {
 public:
-    explicit Lexer(std::string src) : src(src), pos(0) {};
-    std::vector<Token> Tokenize();
+    explicit Lexer(std::string src);
+    std::vector<Token> tokenize();
+
+private:
     std::string src;
-    size_t pos;
-    Token HandleValue();
-    Token HandleIdentifier();
+    size_t i = 0;
 
-
+    char peek();
+    char get();
+    void skip();
 };
-
-
-#endif //L_LEXER_H
