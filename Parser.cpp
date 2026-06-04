@@ -1,11 +1,11 @@
 ﻿#include "Parser.h"
 #include <stdexcept>
 
-Token& Parser::peek() { return tokens[i]; }
-Token& Parser::advance() { return tokens[i++]; }
+Token& Parser::Peek() { return tokens[i]; }
+Token& Parser::Advance() { return tokens[i++]; } // consumes current token and move to the next
 void Parser::CheckForSemiColon() {
-    if (peek().type == TokenType::SEMI) {
-        advance();
+    if (Peek().type == TokenType::SEMI) {
+        Advance();
     }
 }
 
@@ -13,8 +13,8 @@ Parser::Parser(std::vector<Token> t) : tokens(std::move(t)) {}
 
 bool Parser::match(TokenType t) {
 
-    if (peek().type == t) {
-        advance();
+    if (Peek().type == t) {
+        Advance();
         return true;
     }
     return false;
@@ -22,17 +22,17 @@ bool Parser::match(TokenType t) {
 
 std::unique_ptr<Expr> Parser::parseExpr() {
 
-    if (peek().type == TokenType::NUMBER) {
+    if (Peek().type == TokenType::NUMBER) {
 
-        int value = std::stoi(peek().text);
-        advance();
+        int value = std::stoi(Peek().text);
+        Advance();
         return std::make_unique<IntExpr>(value);
     }
 
-    if (peek().type == TokenType::IDENT) {
+    if (Peek().type == TokenType::IDENT) {
 
-        std::string name = peek().text;
-        advance();
+        std::string name = Peek().text;
+        Advance();
         return std::make_unique<VarExpr>(name);
     }
 
@@ -47,14 +47,14 @@ std::unique_ptr<Stmt> Parser::parseStmt() {
 
         auto stmt = std::make_unique<VarDecl>();
 
-        if (peek().type != TokenType::IDENT) {
+        if (Peek().type != TokenType::IDENT) {
             throw std::runtime_error("Expected identifier");
         }
 
-        stmt->name = advance().text;
+        stmt->name = Advance().text;
 
-        if (peek().type == TokenType::EQUAL) {
-            advance();
+        if (Peek().type == TokenType::EQUAL) {
+            Advance();
             stmt->value = parseExpr();
         }
 
@@ -76,6 +76,26 @@ std::unique_ptr<Stmt> Parser::parseStmt() {
         return stmt;
     }
 
+    if (match(TokenType::IF)) {
+
+        //structure = [IF][LBRACE][Condition][RBrace]
+
+        auto stmt = std::make_unique<IfStmt>();
+
+
+
+        Advance();
+
+        while (Peek().type != TokenType::LBRACE)
+        {
+            stmt->body.push_back(parseStmt());
+        }
+
+        Advance();
+
+        return stmt;
+    }
+
     return nullptr;
 }
 
@@ -83,16 +103,20 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
 
     std::vector<std::unique_ptr<Stmt>> stmts;
 
-    while (peek().type != TokenType::END) {
+    while (Peek().type != TokenType::END) {
 
         auto stmt = parseStmt();
 
         if (!stmt) {
-            throw std::runtime_error("Unexpected token: " + peek().text);
+            ThrowError("Unexpected Token", Peek().text);
         }
 
         stmts.push_back(std::move(stmt));
     }
 
     return stmts;
+}
+
+void Parser::ThrowError(std::string reason, std::string text) {
+    throw std::runtime_error(reason + " " + text);
 }

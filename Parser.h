@@ -16,11 +16,12 @@ private:
     std::vector<Token> tokens;
     size_t i = 0;
 
-    Token& peek();
-    Token& advance();
+    Token& Peek();
+    Token& Advance();
     bool match(TokenType t);
 
     std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<Stmt> parseStmt();
     void CheckForSemiColon();
+    void ThrowError(std::string, std::string);
 };

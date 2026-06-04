@@ -4,12 +4,12 @@
 
 Lexer::Lexer(std::string s) : src(std::move(s)) {}
 
-char Lexer::peek() { return i < src.size() ? src[i] : '\0'; }
+char Lexer::Peek() { return i < src.size() ? src[i] : '\0'; }
 
-char Lexer::get(){ return src[i++]; }
+char Lexer::Advance(){ return src[i++]; }
 
 void Lexer::skip() {
-    while (isspace(peek())) get();
+    while (isspace(Peek())) Advance();
 }
 
 std::vector<Token> Lexer::tokenize()
@@ -19,24 +19,26 @@ std::vector<Token> Lexer::tokenize()
     while (i < src.size())
     {
         skip();
-        char c = peek();
+        char c = Peek();
 
         if (isalpha(c)) {
             std::string word;
 
-            while (isalnum(peek())) word += get();
+            while (isalnum(Peek())) word += Advance();
 
             if (word == "int")
                 out.push_back({TokenType::INT, word});
             else if (word == "print")
                 out.push_back({TokenType::PRINT, word});
+            else if (word == "if")
+                out.push_back({TokenType::IF, word});
             else
                 out.push_back({TokenType::IDENT, word});
         }
         else if (isdigit(c))
         {
             std::string num;
-            while (isdigit(peek())) num += get();
+            while (isdigit(Peek())) num += Advance();
             out.push_back({TokenType::NUMBER, num});
         }
         else
@@ -44,15 +46,37 @@ std::vector<Token> Lexer::tokenize()
             switch (c)
             {
                 case '=':
-                    get(); out.push_back({TokenType::EQUAL, "="});
+                    Advance();
+
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        out.push_back({TokenType::EQUALEQUAL, "=="});
+                    }
+                    else
+                        out.push_back({TokenType::EQUAL, "="});
                     break;
+
                 case ';':
-                    get(); out.push_back({TokenType::SEMI, ";"});
+                    Advance();
+                    out.push_back({TokenType::SEMI, ";"});
                     break;
+
+
+                case '>':
+
+                    break;
+
+                case '<':
+
+                    break;
+
                 default:
-                    get();
+                    Advance();
                     break;
+
             }
+
         }
     }
 

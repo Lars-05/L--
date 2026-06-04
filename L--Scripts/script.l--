@@ -1,8 +1,5 @@
-int x = 10;
-print x;
+int x = 1;
 
-int y = 25;
-print y;
-
-int z = 100;
-print z;
+if x {
+    print x;
+}

@@ -10,6 +10,7 @@ int Interpreter::Evaluate(Expr* e)
     if (auto v = dynamic_cast<VarExpr*>(e))
         return vars[v->name];
 
+
     return 0;
 }
 
@@ -26,5 +27,14 @@ void Interpreter::Run(const std::vector<std::unique_ptr<Stmt>>& stmts)
         {
             std::cout << Evaluate(p->value.get()) << "\n";
         }
+
+        if (auto ifStmt = dynamic_cast<IfStmt*>(stmt.get()))
+        {
+            if (Evaluate(ifStmt->condition.get()))
+            {
+                Run(ifStmt->body);
+            }
+        }
+
     }
 }
