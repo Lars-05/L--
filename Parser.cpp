@@ -1,60 +1,68 @@
 ﻿#include "Parser.h"
 #include <stdexcept>
 
-Token& Parser::Peek() { return tokens[i]; }
-Token& Parser::Advance() { return tokens[i++]; } // consumes current token and move to the next
-void Parser::CheckForSemiColon() {
-    if (Peek().type == TokenType::SEMI) {
-        Advance();
-    }
+Token& Parser::Peek()
+{
+    if (i >= tokens.size())
+        throw std::runtime_error("Unexpected end of input");
+
+    return tokens[i];
 }
 
-Parser::Parser(std::vector<Token> t) : tokens(std::move(t)) {}
+Token& Parser::Advance()
+{
+    if (i >= tokens.size())
+        throw std::runtime_error("Unexpected end of input");
 
-bool Parser::match(TokenType t) {
-
-    if (Peek().type == t) {
-        Advance();
-        return true;
-    }
-    return false;
+    return tokens[i++];
 }
 
-std::unique_ptr<Expr> Parser::parseExpr() {
-
-    if (Peek().type == TokenType::NUMBER) {
-
-        int value = std::stoi(Peek().text);
+void Parser::CheckForSemiColon()
+{
+    if (Peek().type == TokenType::SEMI)
         Advance();
+}
+
+Parser::Parser(std::vector<Token> t): tokens(std::move(t)){}
+
+bool Parser::Match(TokenType t)
+{
+    return Peek().type == t;
+}
+
+std::unique_ptr<Expr> Parser::parseExpr()
+{
+    if (Match(TokenType::NUMBER))
+    {
+        int value = std::stoi(Advance().text);
         return std::make_unique<IntExpr>(value);
     }
 
-    if (Peek().type == TokenType::IDENT) {
-
-        std::string name = Peek().text;
-        Advance();
+    if (Match(TokenType::IDENT))
+    {
+        std::string name = Advance().text;
         return std::make_unique<VarExpr>(name);
     }
 
     throw std::runtime_error("Expected expression");
 }
 
-std::unique_ptr<Stmt> Parser::parseStmt() {
-
-    if (match(TokenType::INT)) {
-
-        //structure = [INT][IDENT(x)][=][NUMBER(10)][;]
+std::unique_ptr<Stmt> Parser::parseStmt()
+{
+    if (Match(TokenType::INT))
+    {
+        Advance(); // consume INT
 
         auto stmt = std::make_unique<VarDecl>();
 
-        if (Peek().type != TokenType::IDENT) {
-            throw std::runtime_error("Expected identifier");
-        }
+        if (!Match(TokenType::IDENT))
+            ThrowError("Expected identifier:", Peek().text);
 
         stmt->name = Advance().text;
 
-        if (Peek().type == TokenType::EQUAL) {
-            Advance();
+        if (Match(TokenType::EQUAL))
+        {
+            Advance(); // consume '='
             stmt->value = parseExpr();
         }
 
@@ -63,12 +71,11 @@ std::unique_ptr<Stmt> Parser::parseStmt() {
         return stmt;
     }
 
-    if (match(TokenType::PRINT)) {
-
-        //structure =[PRINT][IDENT(x)][;]
+    if (Match(TokenType::PRINT))
+    {
+        Advance(); // consume PRINT
 
         auto stmt = std::make_unique<PrintStmt>();
-
         stmt->value = parseExpr();
 
         CheckForSemiColon();
@@ -76,40 +83,65 @@ std::unique_ptr<Stmt> Parser::parseStmt() {
         return stmt;
     }
 
-    if (match(TokenType::IF)) {
-
-        //structure = [IF][LBRACE][Condition][RBrace]
+    if (Match(TokenType::IF))
+    {
+        Advance();
 
         auto stmt = std::make_unique<IfStmt>();
+        stmt->condition = std::make_unique<BinaryExpr>();
 
-
+        if (!Match(TokenType::LPAREN))
+            ThrowError("Expected (", Peek().text);
 
         Advance();
 
-        while (Peek().type != TokenType::LBRACE)
+        stmt->condition->left = parseExpr();
+
+        TokenType op = Peek().type;
+
+        if (!IsOperatorValid(op))
+            ThrowError("Expected ==", Peek().text);
+
+        stmt->condition->op = op;
+        Advance();
+
+        stmt->condition->right = parseExpr();
+
+        if (!Match(TokenType::RPAREN))
+            ThrowError("Expected )", Peek().text);
+
+        Advance();
+
+        if (!Match(TokenType::LBRACKET))
+            ThrowError("Expected {", Peek().text);
+
+        Advance();
+
+        while (!Match(TokenType::RBRACKET))
         {
-            stmt->body.push_back(parseStmt());
+            auto bodyStmt = parseStmt();
+
+            if (!bodyStmt)
+                ThrowError("Invalid statement inside IF body", Peek().text);
+
+            stmt->body.push_back(std::move(bodyStmt));
         }
 
         Advance();
-
         return stmt;
     }
-
-    return nullptr;
 }
 
-std::vector<std::unique_ptr<Stmt>> Parser::parse() {
-
+std::vector<std::unique_ptr<Stmt>> Parser::Parse()
+{
     std::vector<std::unique_ptr<Stmt>> stmts;
 
-    while (Peek().type != TokenType::END) {
-
+    while (Peek().type != TokenType::END)
+    {
         auto stmt = parseStmt();
 
-        if (!stmt) {
-            ThrowError("Unexpected Token", Peek().text);
-        }
+        if (!stmt)
+            ThrowError("Unexpected Token:", Peek().text);
 
         stmts.push_back(std::move(stmt));
     }
@@ -117,6 +149,19 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     return stmts;
 }
 
-void Parser::ThrowError(std::string reason, std::string text) {
+void Parser::ThrowError(std::string reason, std::string text)
+{
     throw std::runtime_error(reason + " " + text);
+}
+
+bool Parser::IsOperatorValid(TokenType pOperator) {
+    bool foundMatch = false;
+    for (auto comparisonToken : comparisonTokens)
+    {
+        if (comparisonToken != pOperator) {
+            continue;
+        }
+        foundMatch = true;
+    }
+    return foundMatch;
 }

@@ -28,15 +28,13 @@ int main() {
 
     std::cout << "File loaded successfully\n";
 
-
     Lexer lexer(source);
     auto tokens = lexer.tokenize();
 
     std::cout << "Lexer complete\n";
 
-
     Parser parser(tokens);
-    auto ast = parser.parse();
+    auto ast = parser.Parse();
 
     std::cout << "Parser complete\n";
 

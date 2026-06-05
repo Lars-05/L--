@@ -1,5 +1,12 @@
-int x = 1;
+int x = 10;
 
-if x {
+if(x < 11)
+{
     print x;
 }
+
+
+
+
+
+

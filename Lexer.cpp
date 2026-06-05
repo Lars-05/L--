@@ -21,10 +21,12 @@ std::vector<Token> Lexer::tokenize()
         skip();
         char c = Peek();
 
-        if (isalpha(c)) {
+        if (isalpha(c))
+        {
             std::string word;
 
-            while (isalnum(Peek())) word += Advance();
+            while (isalnum(Peek()))
+                word += Advance();
 
             if (word == "int")
                 out.push_back({TokenType::INT, word});
@@ -38,7 +40,10 @@ std::vector<Token> Lexer::tokenize()
         else if (isdigit(c))
         {
             std::string num;
-            while (isdigit(Peek())) num += Advance();
+
+            while (isdigit(Peek()))
+                num += Advance();
+
             out.push_back({TokenType::NUMBER, num});
         }
         else
@@ -47,7 +52,6 @@ std::vector<Token> Lexer::tokenize()
             {
                 case '=':
                     Advance();
-
                     if (Peek() == '=')
                     {
                         Advance();
@@ -57,29 +61,58 @@ std::vector<Token> Lexer::tokenize()
                         out.push_back({TokenType::EQUAL, "="});
                     break;
 
+                case '<':
+                    Advance();
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        out.push_back({TokenType::EQUALORLESSER, "<="});
+                    }
+                    else
+                        out.push_back({TokenType::LESSER, "<"});
+                    break;
+
+                case '>':
+                    Advance();
+                    if (Peek() == '=')
+                    {
+                        Advance();
+                        out.push_back({TokenType::EQUALORGREATER, ">="});
+                    }
+                    else
+                        out.push_back({TokenType::GREATER, ">"});
+                    break;
                 case ';':
                     Advance();
                     out.push_back({TokenType::SEMI, ";"});
                     break;
 
-
-                case '>':
-
+                case '(':
+                    Advance();
+                    out.push_back({TokenType::LPAREN, "("});
                     break;
 
-                case '<':
+                case ')':
+                    Advance();
+                    out.push_back({TokenType::RPAREN, ")"});
+                    break;
 
+                case '{':
+                    Advance();
+                    out.push_back({TokenType::LBRACKET, "{"});
+                    break;
+
+                case '}':
+                    Advance();
+                    out.push_back({TokenType::RBRACKET, "}"});
                     break;
 
                 default:
                     Advance();
                     break;
-
             }
-
         }
     }
-
     out.push_back({TokenType::END, ""});
     return out;
 }

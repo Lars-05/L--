@@ -13,8 +13,8 @@ enum class TokenType {
     SEMI,
     END,
     IF,
-    LBRACE,
-    RBRACE,
+    LPAREN,
+    RPAREN,
     LBRACKET,
     RBRACKET,
 
@@ -26,9 +26,6 @@ enum class TokenType {
     NOTEQUAL,
 };
 
-
-
-
 struct Token {
     TokenType type;
     std::string text;
@@ -36,14 +33,7 @@ struct Token {
 
 class Lexer {
 public:
-    std::array<TokenType, 6> comparisonTokens = {
-        TokenType::EQUALEQUAL,
-        TokenType::GREATER,
-        TokenType::LESSER,
-        TokenType::EQUALORLESSER,
-        TokenType::EQUALORGREATER,
-        TokenType::NOTEQUAL,
-    };
+
     explicit Lexer(std::string src);
     std::vector<Token> tokenize();
 
