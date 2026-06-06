@@ -17,6 +17,13 @@ struct IntExpr : Expr
     IntExpr(int v) : value(v) {}
 };
 
+struct StringExpr : Expr
+{
+    std::string value;
+    StringExpr(std::string v) : value(v) {}
+};
+
+
 struct VarExpr : Expr
 {
     std::string name;

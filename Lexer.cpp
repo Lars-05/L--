@@ -34,6 +34,8 @@ std::vector<Token> Lexer::tokenize()
                 out.push_back({TokenType::PRINT, word});
             else if (word == "if")
                 out.push_back({TokenType::IF, word});
+            else if (word == "string")
+                out.push_back({TokenType::STRING, word});
             else
                 out.push_back({TokenType::IDENT, word});
         }
@@ -107,9 +109,20 @@ std::vector<Token> Lexer::tokenize()
                     out.push_back({TokenType::RBRACKET, "}"});
                     break;
 
-                default:
+                case '"':
+                    std::string stringContent;
                     Advance();
-                    break;
+                    while (Peek() != '"' && Peek() != '\0')
+                    {
+                        stringContent += Advance();
+                    }
+                    out.push_back({TokenType::STRINGLITERAL, stringContent});
+                    Advance();
+                break;
+
+                //default:
+                    //Advance();
+                //break;
             }
         }
     }

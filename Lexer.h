@@ -24,6 +24,10 @@ enum class TokenType {
     EQUALORLESSER,
     EQUALORGREATER,
     NOTEQUAL,
+    STRING,
+    STRINGLITERAL,
+    QUOTEMARK
+
 };
 
 struct Token {

@@ -1,4 +1,6 @@
 ﻿#include "Parser.h"
+
+#include <iostream>
 #include <stdexcept>
 
 Token& Parser::Peek()
@@ -44,7 +46,11 @@ std::unique_ptr<Expr> Parser::parseExpr()
         return std::make_unique<VarExpr>(name);
     }
 
-    throw std::runtime_error("Expected expression");
+    if (Match(TokenType::STRINGLITERAL))
+    {
+        std::string name = Advance().text;
+        return std::make_unique<StringExpr>(name);
+    }
 }
 
 std::unique_ptr<Stmt> Parser::parseStmt()
@@ -52,6 +58,28 @@ std::unique_ptr<Stmt> Parser::parseStmt()
     if (Match(TokenType::INT))
     {
         Advance(); // consume INT
+
+        auto stmt = std::make_unique<VarDecl>();
+
+        if (!Match(TokenType::IDENT))
+            ThrowError("Expected identifier:", Peek().text);
+
+        stmt->name = Advance().text;
+
+        if (Match(TokenType::EQUAL))
+        {
+            Advance(); // consume '='
+            stmt->value = parseExpr();
+        }
+
+        CheckForSemiColon();
+
+        return stmt;
+    }
+
+    if (Match(TokenType::STRING))
+    {
+        Advance(); // consumes STRING
 
         auto stmt = std::make_unique<VarDecl>();
 
@@ -82,6 +110,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
 
         return stmt;
     }
+
 
     if (Match(TokenType::IF))
     {
@@ -151,7 +180,8 @@ std::vector<std::unique_ptr<Stmt>> Parser::Parse()
 
 void Parser::ThrowError(std::string reason, std::string text)
 {
-    throw std::runtime_error(reason + " " + text);
+    std::cout << reason + " " + text<<std::endl ;
+    //throw std::runtime_error(reason + " " + text);
 }
 
 bool Parser::IsOperatorValid(TokenType pOperator) {

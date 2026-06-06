@@ -1,8 +1,11 @@
 int x = 10;
 
+string y = "wawa"
+string z = "wawawaawwa"
 if(x < 11)
 {
     print x;
+    print z;
 }
 
 
