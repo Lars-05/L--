@@ -1,19 +1,49 @@
-int x = 10;
-int y = 20;
-int z = 0;
-
-z = x;
+int a = 10;
+int b = 20;
+int c = 0;
 
 array nums = {1, 2, 3, 4, 5};
-string k = "wawa";
-print z;
+array data = {10, 20, 30, 40, 50};
+string seperator = "-----------";
+string msg = "showing off some some cool numbers";
 
+print msg;
+
+// wow, i am a comment!!!
+
+print a;
+print b;
+
+nums[0] = a;
+nums[1] = b;
 nums[2] = 99;
-print k;
+
+
+
+
+print nums[0];
+print nums[1];
 print nums[2];
+print nums[3];
+print nums[4];
 
-if (x < y) {
-    print x;
-    print y;
+data[4] = nums[2];
+data[3] = data[4];
+print seperator ;
+print data[0];
+print data[1];
+print data[2];
+print data[3];
+print data[4];
+print seperator ;
+if (a < b) {
+    print a;
+    print b;
 }
-
+print seperator ;
+if (b > a) {
+    print nums[2];
+}
+print seperator ;
+string status = "complete";
+print status;

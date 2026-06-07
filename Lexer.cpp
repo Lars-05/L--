@@ -111,10 +111,21 @@ std::vector<Token> Lexer::tokenize()
                 break;
 
             case '/':
+            {
                 Advance();
-                out.push_back({TokenType::SLASH, "/"});
-                break;
 
+                if (Peek() == '/')
+                {
+                    while (Peek() != '\n' && Peek() != '\0')
+                        Advance();
+                }
+                else
+                {
+                    out.push_back({TokenType::SLASH, "/"});
+                }
+
+                break;
+            }
 
             case ';':
                 Advance();
