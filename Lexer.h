@@ -15,6 +15,8 @@ enum class TokenType {
     IF,
     LPAREN,
     RPAREN,
+    LBRACE,
+    RBRACE,
     LBRACKET,
     RBRACKET,
 
@@ -26,8 +28,9 @@ enum class TokenType {
     NOTEQUAL,
     STRING,
     STRINGLITERAL,
-    QUOTEMARK
-
+    QUOTEMARK,
+    ARRAY,
+    COMMA
 };
 
 struct Token {

@@ -36,6 +36,8 @@ std::vector<Token> Lexer::tokenize()
                 out.push_back({TokenType::IF, word});
             else if (word == "string")
                 out.push_back({TokenType::STRING, word});
+            else if (word == "array")
+                out.push_back({TokenType::ARRAY, word});
             else
                 out.push_back({TokenType::IDENT, word});
         }
@@ -101,13 +103,29 @@ std::vector<Token> Lexer::tokenize()
 
                 case '{':
                     Advance();
-                    out.push_back({TokenType::LBRACKET, "{"});
+                    out.push_back({TokenType::LBRACE, "{"});
                     break;
 
                 case '}':
                     Advance();
-                    out.push_back({TokenType::RBRACKET, "}"});
+                    out.push_back({TokenType::RBRACE, "}"});
                     break;
+
+                case '[':
+                    Advance();
+                    out.push_back({TokenType::LBRACKET, "["});
+                    break;
+
+                case ']':
+                    Advance();
+                    out.push_back({TokenType::RBRACKET, "]"});
+                    break;
+
+                case ',':
+                    Advance();
+                    out.push_back({TokenType::COMMA, ","});
+                    break;
+
 
                 case '"':
                     std::string stringContent;

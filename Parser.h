@@ -17,13 +17,22 @@ private:
 
     Token& Peek();
     Token& Advance();
-    bool Match(TokenType t);
+    bool MatchToken(TokenType t);
     bool IsOperatorValid(TokenType);
 
     std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<Stmt> parseStmt();
     void CheckForSemiColon();
     void ThrowError(std::string, std::string);
+
+    template<typename T>
+    bool MatchExpr(const std::unique_ptr<Expr>& expr)
+    {
+        return dynamic_cast<T*>(expr.get()) != nullptr;
+    }
+
+
+
 
     std::array<TokenType, 6> comparisonTokens = {
         TokenType::EQUALEQUAL,

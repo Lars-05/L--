@@ -1,9 +1,8 @@
-﻿
-#pragma once
+﻿#pragma once
+
 #include <string>
 #include <memory>
 #include <vector>
-
 #include "Lexer.h"
 
 struct Expr
@@ -20,15 +19,28 @@ struct IntExpr : Expr
 struct StringExpr : Expr
 {
     std::string value;
-    StringExpr(std::string v) : value(v) {}
+    StringExpr(std::string v) : value(std::move(v)) {}
 };
-
 
 struct VarExpr : Expr
 {
     std::string name;
     VarExpr(std::string n) : name(std::move(n)) {}
 };
+
+struct ArrayIndexExpr : Expr
+{
+    std::unique_ptr<Expr> array;  // VarExpr
+    std::unique_ptr<Expr> index;
+};
+
+struct BinaryExpr : Expr
+{
+    std::unique_ptr<Expr> left;
+    std::unique_ptr<Expr> right;
+    TokenType op;
+};
+
 
 
 struct Stmt
@@ -42,11 +54,17 @@ struct VarDecl : Stmt
     std::unique_ptr<Expr> value;
 };
 
-struct BinaryExpr : Expr
+struct AssignmentStmt : Stmt
 {
-    std::unique_ptr<Expr> left;
+    std::unique_ptr<Expr> left;   // VarExpr or ArrayIndexExpr
     std::unique_ptr<Expr> right;
-    TokenType op;
+};
+
+struct ArrayDecl : Stmt
+{
+    std::string name;
+    int size = 0;
+    std::vector<std::unique_ptr<Expr>> values;
 };
 
 struct PrintStmt : Stmt

@@ -1,5 +1,5 @@
 ﻿#include "Parser.h"
-
+#include <array>
 #include <iostream>
 #include <stdexcept>
 
@@ -27,26 +27,49 @@ void Parser::CheckForSemiColon()
 
 Parser::Parser(std::vector<Token> t): tokens(std::move(t)){}
 
-bool Parser::Match(TokenType t)
+
+
+bool Parser::MatchToken(TokenType t)
 {
     return Peek().type == t;
 }
 
+
+
 std::unique_ptr<Expr> Parser::parseExpr()
 {
-    if (Match(TokenType::NUMBER))
+    if (MatchToken(TokenType::NUMBER))
     {
         int value = std::stoi(Advance().text);
         return std::make_unique<IntExpr>(value);
     }
 
-    if (Match(TokenType::IDENT))
+    if (MatchToken(TokenType::IDENT))
     {
         std::string name = Advance().text;
+
+        if (MatchToken(TokenType::LBRACKET))
+        {
+            Advance(); // [
+
+            auto expr = std::make_unique<ArrayIndexExpr>();
+
+            expr->array = std::make_unique<VarExpr>(name);
+            expr->index = parseExpr();
+
+            if (!MatchToken(TokenType::RBRACKET))
+                ThrowError("Expected ]", Peek().text);
+
+            Advance();
+
+            return expr;
+        }
+
         return std::make_unique<VarExpr>(name);
     }
 
-    if (Match(TokenType::STRINGLITERAL))
+
+    if (MatchToken(TokenType::STRINGLITERAL))
     {
         std::string name = Advance().text;
         return std::make_unique<StringExpr>(name);
@@ -55,18 +78,18 @@ std::unique_ptr<Expr> Parser::parseExpr()
 
 std::unique_ptr<Stmt> Parser::parseStmt()
 {
-    if (Match(TokenType::INT))
+    if (MatchToken(TokenType::INT))
     {
         Advance(); // consume INT
 
         auto stmt = std::make_unique<VarDecl>();
 
-        if (!Match(TokenType::IDENT))
+        if (!MatchToken(TokenType::IDENT))
             ThrowError("Expected identifier:", Peek().text);
 
         stmt->name = Advance().text;
 
-        if (Match(TokenType::EQUAL))
+        if (MatchToken(TokenType::EQUAL))
         {
             Advance(); // consume '='
             stmt->value = parseExpr();
@@ -77,18 +100,36 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         return stmt;
     }
 
-    if (Match(TokenType::STRING))
+
+    // for a[0] = 0
+    if (MatchToken(TokenType::IDENT))
+    {
+        Advance(); // consumes IDENT
+        MatchToken(TokenType::LBRACKET);
+              Advance();
+        MatchToken(TokenType::NUMBER);
+        MatchToken(TokenType::RBRACKET);
+        MatchToken(TokenType::EQUAL);
+
+
+        auto stmt = std::make_unique<VarDecl>();
+
+
+        return stmt;
+    }
+
+    if (MatchToken(TokenType::STRING))
     {
         Advance(); // consumes STRING
 
         auto stmt = std::make_unique<VarDecl>();
 
-        if (!Match(TokenType::IDENT))
+        if (!MatchToken(TokenType::IDENT))
             ThrowError("Expected identifier:", Peek().text);
 
         stmt->name = Advance().text;
 
-        if (Match(TokenType::EQUAL))
+        if (MatchToken(TokenType::EQUAL))
         {
             Advance(); // consume '='
             stmt->value = parseExpr();
@@ -99,7 +140,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         return stmt;
     }
 
-    if (Match(TokenType::PRINT))
+    if (MatchToken(TokenType::PRINT))
     {
         Advance(); // consume PRINT
 
@@ -111,15 +152,48 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         return stmt;
     }
 
+    if (MatchToken(TokenType::ARRAY))
+    {
+        Advance(); // array
 
-    if (Match(TokenType::IF))
+        auto stmt = std::make_unique<ArrayDecl>();
+
+        if (!MatchToken(TokenType::IDENT))
+            ThrowError("Expected array name", Peek().text);
+
+        stmt->name = Advance().text;
+
+        if (!MatchToken(TokenType::EQUAL))
+            ThrowError("Expected =", Peek().text);
+        Advance();
+
+        if (!MatchToken(TokenType::LBRACE))
+            ThrowError("Expected {", Peek().text);
+        Advance();
+
+        while (!MatchToken(TokenType::RBRACE))
+        {
+            stmt->values.push_back(parseExpr());
+
+            if (MatchToken(TokenType::COMMA))
+                Advance();
+        }
+
+        Advance(); // }
+
+        CheckForSemiColon();
+        return stmt;
+    }
+
+
+    if (MatchToken(TokenType::IF))
     {
         Advance();
 
         auto stmt = std::make_unique<IfStmt>();
         stmt->condition = std::make_unique<BinaryExpr>();
 
-        if (!Match(TokenType::LPAREN))
+        if (!MatchToken(TokenType::LPAREN))
             ThrowError("Expected (", Peek().text);
 
         Advance();
@@ -136,17 +210,17 @@ std::unique_ptr<Stmt> Parser::parseStmt()
 
         stmt->condition->right = parseExpr();
 
-        if (!Match(TokenType::RPAREN))
+        if (!MatchToken(TokenType::RPAREN))
             ThrowError("Expected )", Peek().text);
 
         Advance();
 
-        if (!Match(TokenType::LBRACKET))
+        if (!MatchToken(TokenType::LBRACE))
             ThrowError("Expected {", Peek().text);
 
         Advance();
 
-        while (!Match(TokenType::RBRACKET))
+        while (!MatchToken(TokenType::RBRACE))
         {
             auto bodyStmt = parseStmt();
 
@@ -174,7 +248,6 @@ std::vector<std::unique_ptr<Stmt>> Parser::Parse()
 
         stmts.push_back(std::move(stmt));
     }
-
     return stmts;
 }
 
