@@ -35,7 +35,6 @@ enum class TokenType {
     MINUS,
     STAR,
     SLASH
-
 };
 
 struct Token {
@@ -45,7 +44,6 @@ struct Token {
 
 class Lexer {
 public:
-
     explicit Lexer(std::string src);
     std::vector<Token> tokenize();
 

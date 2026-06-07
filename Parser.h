@@ -1,15 +1,21 @@
-﻿
-#pragma once
-#include <memory>
-#include "Lexer.h"
-#include <vector>
+﻿#pragma once
 
+#include <memory>
+#include <vector>
+#include <array>
+
+#include "Lexer.h"
 #include "AST.h"
 
-class Parser {
+class Parser
+{
 public:
     explicit Parser(std::vector<Token> t);
+
     std::vector<std::unique_ptr<Stmt>> Parse();
+
+    // global parse error flag (shared across parser runs if static is kept)
+    static bool hadError;
 
 private:
     std::vector<Token> tokens;
@@ -18,12 +24,15 @@ private:
     Token& Peek();
     Token& Advance();
     bool MatchToken(TokenType t);
-    bool IsOperatorValid(TokenType);
+
+    void CheckForSemiColon();
 
     std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<Stmt> parseStmt();
-    void CheckForSemiColon();
-    void ThrowError(std::string, std::string);
+
+    void Error(const std::string& reason, const Token& token);
+
+    bool IsOperatorValid(TokenType op);
 
     template<typename T>
     bool MatchExpr(const std::unique_ptr<Expr>& expr)
@@ -31,10 +40,8 @@ private:
         return dynamic_cast<T*>(expr.get()) != nullptr;
     }
 
-
-
-
-    std::array<TokenType, 6> comparisonTokens = {
+    std::array<TokenType, 6> comparisonTokens =
+    {
         TokenType::EQUALEQUAL,
         TokenType::GREATER,
         TokenType::LESSER,

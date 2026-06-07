@@ -1,15 +1,24 @@
 ﻿// Lexer.cpp
 #include "Lexer.h"
 #include <cctype>
+#include <stdexcept>
 
 Lexer::Lexer(std::string s) : src(std::move(s)) {}
 
-char Lexer::Peek() { return i < src.size() ? src[i] : '\0'; }
+char Lexer::Peek()
+{
+    return (i < src.size()) ? src[i] : '\0';
+}
 
-char Lexer::Advance(){ return src[i++]; }
+char Lexer::Advance()
+{
+    return src[i++];
+}
 
-void Lexer::skip() {
-    while (isspace(Peek())) Advance();
+void Lexer::skip()
+{
+    while (std::isspace(Peek()))
+        Advance();
 }
 
 std::vector<Token> Lexer::tokenize()
@@ -21,148 +30,156 @@ std::vector<Token> Lexer::tokenize()
         skip();
         char c = Peek();
 
-        if (isalpha(c))
+
+        if (std::isalpha(c))
         {
             std::string word;
 
-            while (isalnum(Peek()))
+            while (std::isalnum(Peek()))
                 word += Advance();
 
-            if (word == "int")
-                out.push_back({TokenType::INT, word});
-            else if (word == "print")
-                out.push_back({TokenType::PRINT, word});
-            else if (word == "if")
-                out.push_back({TokenType::IF, word});
-            else if (word == "string")
-                out.push_back({TokenType::STRING, word});
-            else if (word == "array")
-                out.push_back({TokenType::ARRAY, word});
-            else
-                out.push_back({TokenType::IDENT, word});
+            if (word == "int")        out.push_back({TokenType::INT, word});
+            else if (word == "print") out.push_back({TokenType::PRINT, word});
+            else if (word == "if")    out.push_back({TokenType::IF, word});
+            else if (word == "string")out.push_back({TokenType::STRING, word});
+            else if (word == "array") out.push_back({TokenType::ARRAY, word});
+            else                       out.push_back({TokenType::IDENT, word});
+
+            continue;
         }
-        else if (isdigit(c))
+
+
+        if (std::isdigit(c))
         {
             std::string num;
 
-            while (isdigit(Peek()))
+            while (std::isdigit(Peek()))
                 num += Advance();
 
             out.push_back({TokenType::NUMBER, num});
+            continue;
         }
-        else
+
+        switch (c)
         {
-            switch (c)
-            {
-                case '=':
+            case '=':
+                Advance();
+                if (Peek() == '=')
+                {
                     Advance();
-                    if (Peek() == '=')
-                    {
-                        Advance();
-                        out.push_back({TokenType::EQUALEQUAL, "=="});
-                    }
-                    else
-                        out.push_back({TokenType::EQUAL, "="});
-                    break;
-
-                case '<':
-                    Advance();
-                    if (Peek() == '=')
-                    {
-                        Advance();
-                        out.push_back({TokenType::EQUALORLESSER, "<="});
-                    }
-                    else
-                        out.push_back({TokenType::LESSER, "<"});
-                    break;
-
-                case '>':
-                    Advance();
-                    if (Peek() == '=')
-                    {
-                        Advance();
-                        out.push_back({TokenType::EQUALORGREATER, ">="});
-                    }
-                    else
-                        out.push_back({TokenType::GREATER, ">"});
-                    break;
-                case ';':
-                    Advance();
-                    out.push_back({TokenType::SEMI, ";"});
-                    break;
-
-                case '(':
-                    Advance();
-                    out.push_back({TokenType::LPAREN, "("});
-                    break;
-
-                case ')':
-                    Advance();
-                    out.push_back({TokenType::RPAREN, ")"});
-                    break;
-
-                case '{':
-                    Advance();
-                    out.push_back({TokenType::LBRACE, "{"});
-                    break;
-
-                case '}':
-                    Advance();
-                    out.push_back({TokenType::RBRACE, "}"});
-                    break;
-
-                case '[':
-                    Advance();
-                    out.push_back({TokenType::LBRACKET, "["});
-                    break;
-
-                case ']':
-                    Advance();
-                    out.push_back({TokenType::RBRACKET, "]"});
-                    break;
-
-                case ',':
-                    Advance();
-                    out.push_back({TokenType::COMMA, ","});
-                    break;
-                case '-':
-                    Advance();
-                    out.push_back({TokenType::MINUS,  "-"});
-                    break;
-
-                case '+':
-                    Advance();
-                    out.push_back({TokenType::LBRACKET, "["});
-                    break;
-
-                case '/':
-                    Advance();
-                    out.push_back({TokenType::RBRACKET, "]"});
-                    break;
-
-                case '*':
-                    Advance();
-                    out.push_back({TokenType::COMMA, ","});
-                    break;
-
-
-                case '"':
-                    std::string stringContent;
-                    Advance();
-                    while (Peek() != '"' && Peek() != '\0')
-                    {
-                        stringContent += Advance();
-                    }
-                    out.push_back({TokenType::STRINGLITERAL, stringContent});
-                    Advance();
+                    out.push_back({TokenType::EQUALEQUAL, "=="});
+                }
+                else
+                    out.push_back({TokenType::EQUAL, "="});
                 break;
 
-                //default:
-                    //Advance();
-                //break;
+            case '<':
+                Advance();
+                if (Peek() == '=')
+                {
+                    Advance();
+                    out.push_back({TokenType::EQUALORLESSER, "<="});
+                }
+                else
+                    out.push_back({TokenType::LESSER, "<"});
+                break;
+
+            case '>':
+                Advance();
+                if (Peek() == '=')
+                {
+                    Advance();
+                    out.push_back({TokenType::EQUALORGREATER, ">="});
+                }
+                else
+                    out.push_back({TokenType::GREATER, ">"});
+                break;
+
+            case '+':
+                Advance();
+                out.push_back({TokenType::PLUS, "+"});
+                break;
+
+            case '-':
+                Advance();
+                out.push_back({TokenType::MINUS, "-"});
+                break;
+
+            case '*':
+                Advance();
+                out.push_back({TokenType::STAR, "*"});
+                break;
+
+            case '/':
+                Advance();
+                out.push_back({TokenType::SLASH, "/"});
+                break;
+
+
+            case ';':
+                Advance();
+                out.push_back({TokenType::SEMI, ";"});
+                break;
+
+            case '(':
+                Advance();
+                out.push_back({TokenType::LPAREN, "("});
+                break;
+
+            case ')':
+                Advance();
+                out.push_back({TokenType::RPAREN, ")"});
+                break;
+
+            case '{':
+                Advance();
+                out.push_back({TokenType::LBRACE, "{"});
+                break;
+
+            case '}':
+                Advance();
+                out.push_back({TokenType::RBRACE, "}"});
+                break;
+
+            case '[':
+                Advance();
+                out.push_back({TokenType::LBRACKET, "["});
+                break;
+
+            case ']':
+                Advance();
+                out.push_back({TokenType::RBRACKET, "]"});
+                break;
+
+            case ',':
+                Advance();
+                out.push_back({TokenType::COMMA, ","});
+                break;
+
+            case '"':
+            {
+                Advance(); // consume opening quote
+
+                std::string stringContent;
+
+                while (Peek() != '"' && Peek() != '\0')
+                    stringContent += Advance();
+
+                if (Peek() == '"')
+                    Advance(); // consume closing quote
+
+                out.push_back({TokenType::STRINGLITERAL, stringContent});
+                break;
             }
+
+
+            default:
+
+                Advance();
+                break;
         }
     }
+
     out.push_back({TokenType::END, ""});
     return out;
 }

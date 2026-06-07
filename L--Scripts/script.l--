@@ -1,13 +1,19 @@
-array a = {1, 2, 3, 4, 5};
+int x = 10;
+int y = 20;
+int z = 0;
 
-a[0] = 5;
-a[1] = 4;
-a[2] = 3;
-a[3] = 2;
-a[4] = 1;
+z = x;
 
-print a[0];
-print a[1];
-print a[2];
-print a[3];
-print a[4];
+array nums = {1, 2, 3, 4, 5};
+string k = "wawa";
+print z;
+
+nums[2] = 99;
+print k;
+print nums[2];
+
+if (x < y) {
+    print x;
+    print y;
+}
+

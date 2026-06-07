@@ -26,6 +26,6 @@ public:
 
 private:
     std::unordered_map<std::string, Value> vars;
-
     Value Evaluate(Expr* e);
+    void RuntimeError(const std::string& reason);
 };

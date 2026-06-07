@@ -1,8 +1,20 @@
 ﻿#include "Interpreter.h"
 #include <iostream>
+#include <stdexcept>
 
 using Value = Interpreter::Value;
 using Data  = Interpreter::Data;
+
+
+void RuntimeError(const std::string& reason)
+{
+    std::cerr
+        << "[Runtime Error] " << reason << "\n"
+        << std::endl;
+
+    throw std::runtime_error(reason);
+}
+
 
 void PrintValue(const Value& val)
 {
@@ -34,9 +46,11 @@ void PrintValue(const Value& val)
     }
 }
 
-
 Value Interpreter::Evaluate(Expr* e)
 {
+    if (!e)
+        RuntimeError("Null expression");
+
     if (auto i = dynamic_cast<IntExpr*>(e))
         return Value{ i->value };
 
@@ -44,7 +58,13 @@ Value Interpreter::Evaluate(Expr* e)
         return Value{ s->value };
 
     if (auto v = dynamic_cast<VarExpr*>(e))
-        return vars.at(v->name);
+    {
+        auto it = vars.find(v->name);
+        if (it == vars.end())
+            RuntimeError("Undefined variable: " + v->name);
+
+        return it->second;
+    }
 
     if (auto idx = dynamic_cast<ArrayIndexExpr*>(e))
     {
@@ -54,13 +74,23 @@ Value Interpreter::Evaluate(Expr* e)
 
         const auto& arr = std::get<std::vector<Value>>(arrVal.data);
 
-        return arr.at(i);
+        if (i < 0 || i >= (int)arr.size())
+            RuntimeError("Array index out of bounds");
+
+        return arr[i];
     }
 
     if (auto b = dynamic_cast<BinaryExpr*>(e))
     {
-        int left  = std::get<int>(Evaluate(b->left.get()).data);
-        int right = std::get<int>(Evaluate(b->right.get()).data);
+        Value lval = Evaluate(b->left.get());
+        Value rval = Evaluate(b->right.get());
+
+        if (!std::holds_alternative<int>(lval.data) ||
+            !std::holds_alternative<int>(rval.data))
+            RuntimeError("Binary expression expects integers");
+
+        int left  = std::get<int>(lval.data);
+        int right = std::get<int>(rval.data);
 
         switch (b->op)
         {
@@ -69,7 +99,9 @@ Value Interpreter::Evaluate(Expr* e)
             case TokenType::LESSER:         return Value{ left < right };
             case TokenType::EQUALORLESSER:  return Value{ left <= right };
             case TokenType::EQUALORGREATER: return Value{ left >= right };
-            default: return Value{ false };
+
+            default:
+                RuntimeError("Invalid binary operator");
         }
     }
 
@@ -78,33 +110,40 @@ Value Interpreter::Evaluate(Expr* e)
 
 void Interpreter::Run(const std::vector<std::unique_ptr<Stmt>>& stmts)
 {
-
-
     for (auto& stmt : stmts)
     {
         if (auto a = dynamic_cast<AssignmentStmt*>(stmt.get()))
         {
             auto* var = dynamic_cast<VarExpr*>(a->left.get());
+
             if (!var)
-                throw std::runtime_error("Invalid assignment target");
+                RuntimeError("Invalid assignment target");
 
             vars[var->name] = Evaluate(a->right.get());
         }
 
         if (auto a = dynamic_cast<ArrayAssignStmt*>(stmt.get()))
         {
-            Value& arrVal = vars[a->arrayName];
+            auto it = vars.find(a->arrayName);
+            if (it == vars.end())
+                RuntimeError("Undefined array: " + a->arrayName);
 
-            auto& arr = std::get<std::vector<Value>>(arrVal.data);
+            auto& arr = std::get<std::vector<Value>>(it->second.data);
 
             int idx = std::get<int>(Evaluate(a->index.get()).data);
             Value v = Evaluate(a->value.get());
 
-            arr.at(idx) = v;
+            if (idx < 0 || idx >= (int)arr.size())
+                RuntimeError("Array index out of bounds");
+
+            arr[idx] = v;
         }
 
         if (auto v = dynamic_cast<VarDecl*>(stmt.get()))
         {
+            if (!v->value)
+                RuntimeError("Variable declared without initializer: " + v->name);
+
             vars[v->name] = Evaluate(v->value.get());
         }
 
@@ -127,9 +166,20 @@ void Interpreter::Run(const std::vector<std::unique_ptr<Stmt>>& stmts)
 
         if (auto ifStmt = dynamic_cast<IfStmt*>(stmt.get()))
         {
-            bool cond = std::get<bool>(Evaluate(ifStmt->condition.get()).data);
-            if (cond)
+            Value condVal = Evaluate(ifStmt->condition.get());
+
+            if (!std::holds_alternative<bool>(condVal.data))
+                RuntimeError("IF condition must be boolean");
+
+            if (std::get<bool>(condVal.data))
                 Run(ifStmt->body);
         }
     }
+}
+
+void Interpreter::RuntimeError(const std::string& reason)
+{
+    std::cerr
+        << "[Runtime Error] " << reason << "\n"
+        << std::endl;
 }
