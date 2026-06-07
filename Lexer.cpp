@@ -125,6 +125,25 @@ std::vector<Token> Lexer::tokenize()
                     Advance();
                     out.push_back({TokenType::COMMA, ","});
                     break;
+                case '-':
+                    Advance();
+                    out.push_back({TokenType::MINUS,  "-"});
+                    break;
+
+                case '+':
+                    Advance();
+                    out.push_back({TokenType::LBRACKET, "["});
+                    break;
+
+                case '/':
+                    Advance();
+                    out.push_back({TokenType::RBRACKET, "]"});
+                    break;
+
+                case '*':
+                    Advance();
+                    out.push_back({TokenType::COMMA, ","});
+                    break;
 
 
                 case '"':

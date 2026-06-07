@@ -30,7 +30,12 @@ enum class TokenType {
     STRINGLITERAL,
     QUOTEMARK,
     ARRAY,
-    COMMA
+    COMMA,
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH
+
 };
 
 struct Token {

@@ -78,6 +78,52 @@ std::unique_ptr<Expr> Parser::parseExpr()
 
 std::unique_ptr<Stmt> Parser::parseStmt()
 {
+    if (MatchToken(TokenType::IDENT))
+    {
+        std::string name = Advance().text;
+
+        // assignment: x = ...
+        if (MatchToken(TokenType::EQUAL))
+        {
+            Advance();
+
+            auto stmt = std::make_unique<AssignmentStmt>();
+
+            stmt->left = std::make_unique<VarExpr>(name);
+            stmt->right = parseExpr();
+
+            CheckForSemiColon();
+            return stmt;
+        }
+
+        if (MatchToken(TokenType::LBRACKET))
+        {
+            Advance(); // [
+
+            auto stmt = std::make_unique<ArrayAssignStmt>();
+            stmt->arrayName = name;
+
+            stmt->index = parseExpr();
+
+            if (!MatchToken(TokenType::RBRACKET))
+                ThrowError("Expected ]", Peek().text);
+            Advance();
+
+            if (!MatchToken(TokenType::EQUAL))
+                ThrowError("Expected =", Peek().text);
+            Advance();
+
+            stmt->value = parseExpr();
+
+            CheckForSemiColon();
+            return stmt;
+        }
+
+        // fallback: variable expression? (or error)
+        ThrowError("Unexpected identifier usage", name);
+    }
+
+
     if (MatchToken(TokenType::INT))
     {
         Advance(); // consume INT

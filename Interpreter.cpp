@@ -78,8 +78,31 @@ Value Interpreter::Evaluate(Expr* e)
 
 void Interpreter::Run(const std::vector<std::unique_ptr<Stmt>>& stmts)
 {
+
+
     for (auto& stmt : stmts)
     {
+        if (auto a = dynamic_cast<AssignmentStmt*>(stmt.get()))
+        {
+            auto* var = dynamic_cast<VarExpr*>(a->left.get());
+            if (!var)
+                throw std::runtime_error("Invalid assignment target");
+
+            vars[var->name] = Evaluate(a->right.get());
+        }
+
+        if (auto a = dynamic_cast<ArrayAssignStmt*>(stmt.get()))
+        {
+            Value& arrVal = vars[a->arrayName];
+
+            auto& arr = std::get<std::vector<Value>>(arrVal.data);
+
+            int idx = std::get<int>(Evaluate(a->index.get()).data);
+            Value v = Evaluate(a->value.get());
+
+            arr.at(idx) = v;
+        }
+
         if (auto v = dynamic_cast<VarDecl*>(stmt.get()))
         {
             vars[v->name] = Evaluate(v->value.get());

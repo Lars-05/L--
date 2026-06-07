@@ -56,9 +56,19 @@ struct VarDecl : Stmt
 
 struct AssignmentStmt : Stmt
 {
-    std::unique_ptr<Expr> left;   // VarExpr or ArrayIndexExpr
+    std::unique_ptr<Expr> left;
     std::unique_ptr<Expr> right;
 };
+
+struct ArrayAssignStmt : Stmt
+{
+    std::string arrayName;
+    std::unique_ptr<Expr> index;
+    std::unique_ptr<Expr> value;
+};
+
+
+
 
 struct ArrayDecl : Stmt
 {
