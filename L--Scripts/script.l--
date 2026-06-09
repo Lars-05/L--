@@ -13,7 +13,6 @@ array a = {1,2,5,7};
 // printing an array is that easy! (take that C#!)
 print a;
 
-
 // If statements
 
 if(x >= 3)
@@ -25,7 +24,6 @@ if(x >= 3)
 // arrays index can only be assigned a new value;
 a[0] = 5;
 a[2] = x;
-
 
 // can acces indexes;
 

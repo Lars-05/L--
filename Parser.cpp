@@ -40,7 +40,10 @@ Token& Parser::Advance()
 void Parser::CheckForSemiColon()
 {
     if (Peek().type == TokenType::SEMI)
-        Advance(); // CONSUMES ';'
+        Advance(); // CONSUMES ';
+    else
+        Error("Expected ';'", Peek());
+
 }
 
 Parser::Parser(std::vector<Token> t)
