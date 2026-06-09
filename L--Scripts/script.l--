@@ -1,49 +1,46 @@
-int a = 10;
-int b = 20;
-int c = 0;
+// we only have ints, strings and int arrays
 
-array nums = {1, 2, 3, 4, 5};
-array data = {10, 20, 30, 40, 50};
-string seperator = "-----------";
-string msg = "showing off some some cool numbers";
+int x = 5;
+x + 10;
+x - 1;
+x * 2;
+x / 3;
 
-print msg;
+string w = "i work too!!!";
 
-// wow, i am a comment!!!
+array a = {1,2,5,7};
 
+// printing an array is that easy! (take that C#!)
 print a;
-print b;
-
-nums[0] = a;
-nums[1] = b;
-nums[2] = 99;
 
 
+// If statements
 
-
-print nums[0];
-print nums[1];
-print nums[2];
-print nums[3];
-print nums[4];
-
-data[4] = nums[2];
-data[3] = data[4];
-print seperator ;
-print data[0];
-print data[1];
-print data[2];
-print data[3];
-print data[4];
-print seperator ;
-if (a < b) {
-    print a;
-    print b;
+if(x >= 3)
+{
+    string k = "the if is true";
+    print k;
 }
-print seperator ;
-if (b > a) {
-    print nums[2];
-}
-print seperator ;
-string status = "complete";
-print status;
+
+// arrays index can only be assigned a new value;
+a[0] = 5;
+a[2] = x;
+
+
+// can acces indexes;
+
+print a[0];
+print a[1];
+print a[2];
+print a[3];
+
+// printing
+
+print x;
+print w;
+
+
+
+
+
+

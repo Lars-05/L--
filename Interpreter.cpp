@@ -24,16 +24,13 @@ void PrintValue(const Value& val)
     {
         std::cout << std::get<int>(v);
     }
-    else if (std::holds_alternative<bool>(v))
-    {
-        std::cout << (std::get<bool>(v) ? "true" : "false");
-    }
     else if (std::holds_alternative<std::string>(v))
     {
         std::cout << std::get<std::string>(v);
     }
     else if (std::holds_alternative<std::vector<Value>>(v))
     {
+        // prints the array as [v,v,v] take that C#!!!
         const auto& arr = std::get<std::vector<Value>>(v);
 
         std::cout << "[";
@@ -94,11 +91,20 @@ Value Interpreter::Evaluate(Expr* e)
 
         switch (b->op)
         {
-            case TokenType::EQUALEQUAL:     return Value{ left == right };
-            case TokenType::GREATER:        return Value{ left > right };
-            case TokenType::LESSER:         return Value{ left < right };
-            case TokenType::EQUALORLESSER:  return Value{ left <= right };
-            case TokenType::EQUALORGREATER: return Value{ left >= right };
+            case TokenType::EQUALEQUAL:   return Value{ left == right? 1 : 0 };
+            case TokenType::EQUALORLESSER:  return Value{ left <= right? 1 : 0 };
+            case TokenType::EQUALORGREATER:  return Value{ left >= right? 1 : 0 };
+            case TokenType::NOTEQUAL:  return Value{ left != right? 1 : 0 };
+            case TokenType::GREATER:  return Value{ left > right? 1 : 0  };
+            case TokenType::LESSER:  return Value{ left < right? 1 : 0  };
+
+            case TokenType::PLUS:   return Value{ left + right };
+            case TokenType::MINUS:  return Value{ left - right };
+            case TokenType::STAR:   return Value{ left * right };
+            case TokenType::SLASH:  return Value{ left / right };
+                if (right == 0)
+                    RuntimeError("Division by zero");
+                return Value{ left / right };
 
             default:
                 RuntimeError("Invalid binary operator");
@@ -168,10 +174,9 @@ void Interpreter::Run(const std::vector<std::unique_ptr<Stmt>>& stmts)
         {
             Value condVal = Evaluate(ifStmt->condition.get());
 
-            if (!std::holds_alternative<bool>(condVal.data))
-                RuntimeError("IF condition must be boolean");
 
-            if (std::get<bool>(condVal.data))
+
+            if (std::get<int>(condVal.data) == 1)
                 Run(ifStmt->body);
         }
     }

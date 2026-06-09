@@ -21,7 +21,6 @@ void Parser::Error(const std::string& reason, const Token& token)
 }
 
 
-
 Token& Parser::Peek()
 {
     if (i >= tokens.size())
@@ -64,7 +63,39 @@ bool Parser::IsOperatorValid(TokenType pOperator)
     return false;
 }
 
-std::unique_ptr<Expr> Parser::parseExpr()
+std::unique_ptr<Expr> Parser::parseMultiplicative() {
+
+    auto left = parsePrimary();
+
+    while (MatchToken(TokenType::STAR) || MatchToken(TokenType::SLASH))
+    {
+        TokenType op = Advance().type;
+        auto expr = std::make_unique<BinaryExpr>();
+        expr->left = std::move(left);
+        expr->op = op;
+        expr->right = parsePrimary();
+        left = std::move(expr);
+    }
+    return left;
+}
+
+std::unique_ptr<Expr> Parser::parseAdditive() {
+
+    auto left = parsePrimary();
+
+    while (MatchToken(TokenType::PLUS) || MatchToken(TokenType::MINUS))
+    {
+        TokenType op = Advance().type;
+        auto expr = std::make_unique<BinaryExpr>();
+        expr->left = std::move(left);
+        expr->op = op;
+        expr->right = parsePrimary();
+        left = std::move(expr);
+    }
+    return left;
+}
+
+std::unique_ptr<Expr> Parser::parsePrimary()
 {
     if (MatchToken(TokenType::NUMBER))
     {
@@ -86,7 +117,7 @@ std::unique_ptr<Expr> Parser::parseExpr()
             auto expr = std::make_unique<ArrayIndexExpr>();
 
             expr->array = std::make_unique<VarExpr>(name);
-            expr->index = parseExpr();
+            expr->index = parseMultiplicative();
 
             if (!MatchToken(TokenType::RBRACKET))
                 Error("Expected ']'", Peek());
@@ -110,6 +141,12 @@ std::unique_ptr<Expr> Parser::parseExpr()
     return nullptr;
 }
 
+
+std::unique_ptr<Expr> Parser::parseExpression()
+{
+    return parseAdditive();
+}
+
 std::unique_ptr<Stmt> Parser::parseStmt()
 {
     if (MatchToken(TokenType::IDENT))
@@ -126,11 +163,30 @@ std::unique_ptr<Stmt> Parser::parseStmt()
             auto stmt = std::make_unique<AssignmentStmt>();
 
             stmt->left = std::make_unique<VarExpr>(name);
-            stmt->right = parseExpr();
+            stmt->right = parseMultiplicative();
 
             CheckForSemiColon();
             return stmt;
         }
+        if (MatchToken(TokenType::PLUS) ||MatchToken(TokenType::MINUS) ||MatchToken(TokenType::STAR) ||MatchToken(TokenType::SLASH))
+        {
+            TokenType op = Advance().type;
+            auto rhs = parseExpression();
+
+            auto bin = std::make_unique<BinaryExpr>();
+            bin->left = std::make_unique<VarExpr>(name);
+            bin->right = std::move(rhs);
+            bin->op = op;
+
+            auto stmt = std::make_unique<AssignmentStmt>();
+            stmt->left = std::make_unique<VarExpr>(name);
+            stmt->right = std::move(bin);
+
+            CheckForSemiColon();
+            return stmt;
+        }
+
+
 
         // array assignment: x[0] = ...
         if (MatchToken(TokenType::LBRACKET))
@@ -141,7 +197,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
             auto stmt = std::make_unique<ArrayAssignStmt>();
             stmt->arrayName = name;
 
-            stmt->index = parseExpr();
+            stmt->index = parseMultiplicative();
 
             if (!MatchToken(TokenType::RBRACKET))
                 Error("Expected ']'", Peek());
@@ -155,7 +211,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
             Advance();
             // CONSUMES '='
 
-            stmt->value = parseExpr();
+            stmt->value = parseMultiplicative();
 
             CheckForSemiColon();
             return stmt;
@@ -181,7 +237,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
 
         Advance();
 
-        stmt->value = parseExpr();
+        stmt->value = parseMultiplicative();
 
         CheckForSemiColon();
         return stmt;
@@ -205,7 +261,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
             Advance();
             // CONSUMES '='
 
-            stmt->value = parseExpr();
+            stmt->value = parseMultiplicative();
         }
 
         CheckForSemiColon();
@@ -219,7 +275,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         // CONSUMES PRINT
 
         auto stmt = std::make_unique<PrintStmt>();
-        stmt->value = parseExpr();
+        stmt->value = parseMultiplicative();
 
         CheckForSemiColon();
         return stmt;
@@ -252,7 +308,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
 
         while (!MatchToken(TokenType::RBRACE))
         {
-            stmt->values.push_back(parseExpr());
+            stmt->values.push_back(parseMultiplicative());
 
             if (MatchToken(TokenType::COMMA))
                 Advance(); // CONSUMES ','
@@ -264,7 +320,6 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         CheckForSemiColon();
         return stmt;
     }
-
 
     if (MatchToken(TokenType::IF))
     {
@@ -280,7 +335,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         Advance();
         // CONSUMES '('
 
-        stmt->condition->left = parseExpr();
+        stmt->condition->left = parseMultiplicative();
 
         TokenType op = Peek().type;
 
@@ -291,7 +346,7 @@ std::unique_ptr<Stmt> Parser::parseStmt()
         Advance();
         // CONSUMES OP
 
-        stmt->condition->right = parseExpr();
+        stmt->condition->right = parseMultiplicative();
 
         if (!MatchToken(TokenType::RPAREN))
             Error("Expected ')'", Peek());

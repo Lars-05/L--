@@ -26,8 +26,10 @@ private:
     bool MatchToken(TokenType t);
 
     void CheckForSemiColon();
-
-    std::unique_ptr<Expr> parseExpr();
+    std::unique_ptr<Expr> parseExpression();
+    std::unique_ptr<Expr> parsePrimary();
+    std::unique_ptr<Expr> parseMultiplicative();
+    std::unique_ptr<Expr> parseAdditive();
     std::unique_ptr<Stmt> parseStmt();
 
     void Error(const std::string& reason, const Token& token);

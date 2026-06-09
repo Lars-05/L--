@@ -34,6 +34,7 @@ struct ArrayIndexExpr : Expr
     std::unique_ptr<Expr> index;
 };
 
+
 struct BinaryExpr : Expr
 {
     std::unique_ptr<Expr> left;
@@ -41,11 +42,14 @@ struct BinaryExpr : Expr
     TokenType op;
 };
 
-
-
 struct Stmt
 {
     virtual ~Stmt() = default;
+};
+
+struct ExprStmt : Stmt
+{
+    std::unique_ptr<Expr> expr;
 };
 
 struct VarDecl : Stmt
@@ -67,9 +71,6 @@ struct ArrayAssignStmt : Stmt
     std::unique_ptr<Expr> value;
 };
 
-
-
-
 struct ArrayDecl : Stmt
 {
     std::string name;
@@ -84,6 +85,7 @@ struct PrintStmt : Stmt
 
 struct IfStmt : Stmt
 {
+
     std::unique_ptr<BinaryExpr> condition;
     std::vector<std::unique_ptr<Stmt>> body;
 };
